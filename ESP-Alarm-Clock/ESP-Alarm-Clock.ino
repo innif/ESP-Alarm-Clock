@@ -51,15 +51,40 @@ void set_dots(bool active){
     led_states[SEGMENT_DOT_LOWER] = active;
 }
 
-void write_leds(){
+void set_icons(uint16_t bits){
+    led_states[42] = bits & 0b000000001;
+    led_states[43] = bits & 0b000000010;
+    led_states[44] = bits & 0b000000100;
+    led_states[45] = bits & 0b000001000;
+    led_states[46] = bits & 0b000010000;
+    led_states[47] = bits & 0b000100000;
+    led_states[48] = bits & 0b001000000;
+    led_states[49] = bits & 0b010000000;
+    led_states[50] = bits & 0b100000000;
+}
+
+void write_leds(uint32_t color_on, uint32_t color_off){
     for (int i = 0; i < NUM_LEDS; i++)
     {
         if(led_states[i])
-            pixels.setPixelColor(i, COLOR_ON);
+            pixels.setPixelColor(i, color_on);
         else
-            pixels.setPixelColor(i, COLOR_OFF);
+            pixels.setPixelColor(i, color_off);
     }
     pixels.show();
+}
+
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
 void setup()
@@ -81,15 +106,14 @@ void setup()
     timeClient.setTimeOffset(GMT_OFFSET);
 
     pixels.begin();
-    
-    set_digit(1, 0);
-    set_digit(2, 1);
 
-    set_digit(3, 2);
-    set_digit(4, 3);
+    set_digit(8, 0);
+    set_digit(8, 1);
+    set_digit(8, 2);
+    set_digit(8, 3);
+    write_leds(COLOR_ON, COLOR_OFF);
 
-    write_leds();
-    delay(2000);
+    delay(10000);
 }
 
 void loop()
@@ -103,5 +127,8 @@ void loop()
     set_digit(timeClient.getMinutes() / 10, 2);
     set_digit(timeClient.getMinutes(), 3);
 
-    write_leds();
+    set_icons(0b110010101);
+
+    //write_leds(Wheel(millis() / 20), COLOR_OFF);
+    write_leds(pixels.Color(255,255,255), COLOR_OFF);
 }
